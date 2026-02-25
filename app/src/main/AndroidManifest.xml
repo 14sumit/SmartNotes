@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Internet -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Notification Permission (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- Optional but recommended for exact alarms (Android 12+) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="SmartNotes"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CCAA">
+
+        <!-- LOGIN AS LAUNCHER -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- Other Activities -->
+        <activity android:name=".RegisterActivity" android:exported="false"/>
+        <activity android:name=".DashboardActivity" android:exported="false"/>
+        <activity android:name=".AddNoteActivity" android:exported="false"/>
+        <activity android:name=".EditNoteActivity" android:exported="false"/>
+
+        <!-- Reminder Receiver -->
+        <receiver
+            android:name=".ReminderReceiver"
+            android:exported="false" />
+
+        <!-- Firebase Messaging -->
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>

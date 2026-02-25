@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "595236468449",
+    "project_id": "ccaa-1fe06",
+    "storage_bucket": "ccaa-1fe06.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595236468449:android:14dc6743a595667f7869a0",
+        "android_client_info": {
+          "package_name": "com.example.ccaa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK8677eSoFdXTj1p8s7F5vg4mfe7Un1-I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

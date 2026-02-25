@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.CCAA" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Primary Brand Color -->
+        <item name="colorPrimary">#3F51B5</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Secondary Accent -->
+        <item name="colorSecondary">#03DAC5</item>
+        <item name="colorOnSecondary">#000000</item>
+
+        <!-- Background -->
+        <item name="android:colorBackground">#F5F7FA</item>
+
+        <!-- Status Bar Color -->
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
+
+    </style>
+
+</resources>

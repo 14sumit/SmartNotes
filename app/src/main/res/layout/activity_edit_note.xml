@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/editNoteRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- TITLE -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Title"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- CONTENT -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Content"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etContent"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:gravity="top"
+                android:inputType="textMultiLine"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- REMINDER TEXT -->
+        <TextView
+            android:id="@+id/tvSelectedDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Reminder"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <!-- CHANGE REMINDER BUTTON -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPickDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Change Reminder"
+            android:layout_marginTop="8dp"/>
+
+        <!-- REPEAT DROPDOWN -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Repeat"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/etRepeat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:focusable="true"
+                android:clickable="true"
+                android:cursorVisible="false"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- REMOVE REMINDER BUTTON -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRemoveReminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Remove Reminder"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@android:color/holo_red_dark"/>
+
+
+
+        <!-- UPDATE BUTTON -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Note"
+            android:layout_marginTop="20dp"
+            android:textStyle="bold"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✨ Generate Summary"
+            android:layout_marginTop="12dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRewrite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✍ Rewrite Professionally"
+            android:layout_marginTop="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🏷 Generate Tags"
+            android:layout_marginTop="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSuggestTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🧠 Suggest Better Title"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+
+</ScrollView>
