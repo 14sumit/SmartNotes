@@ -77,7 +77,7 @@ class AIChatActivity : AppCompatActivity() {
             val resultText = withContext(Dispatchers.IO) {
 
                 try {
-                    val apiKey = "AIzaSyCBmfWZAY3PosEEX8JWkNjvllyVfaGOO6U" // 🔥 PUT YOUR REAL KEY
+                    val apiKey = "Api Key" // 🔥 PUT YOUR REAL KEY
 
                     val json = """
                     {
