@@ -10,6 +10,7 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
         val title = intent.getStringExtra("noteTitle") ?: "Reminder"
+        val content = intent.getStringExtra("noteContent") ?: ""
         val noteId = intent.getStringExtra("noteId")
         val repeatType = intent.getStringExtra("repeatType")
         val originalTime = intent.getLongExtra("originalTime", 0L)
@@ -40,7 +41,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Reminder 📒")
-            .setContentText(title)
+            .setContentText("$title\n$content")
             .setContentIntent(pendingIntentOpen)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
@@ -60,6 +61,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
             val newIntent = Intent(context, ReminderReceiver::class.java)
             newIntent.putExtra("noteTitle", title)
+            newIntent.putExtra("noteContent", content)
             newIntent.putExtra("noteId", noteId)
             newIntent.putExtra("repeatType", repeatType)
             newIntent.putExtra("originalTime", nextTime)
@@ -73,6 +75,12 @@ class ReminderReceiver : BroadcastReceiver() {
 
             val alarmManager =
                 context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (!alarmManager.canScheduleExactAlarms()) {
+                    return
+                }
+            }
 
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,

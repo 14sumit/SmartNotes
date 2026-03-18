@@ -5,6 +5,7 @@
     android:id="@+id/editNoteRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:padding="16dp">
 
     <LinearLayout
@@ -12,79 +13,106 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- TITLE -->
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- NOTE CARD -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:padding="16dp">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTitle"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <!-- CONTENT -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="Content"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                <!-- TITLE -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Title"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etContent"
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:gravity="top"
-                android:inputType="textMultiLine"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- REMINDER TEXT -->
-        <TextView
-            android:id="@+id/tvSelectedDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No Reminder"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp"/>
+                <!-- CONTENT -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Content"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-        <!-- CHANGE REMINDER BUTTON -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnPickDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Change Reminder"
-            android:layout_marginTop="8dp"/>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:gravity="top"
+                        android:inputType="textMultiLine"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- REPEAT DROPDOWN -->
-        <com.google.android.material.textfield.TextInputLayout
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <!-- REMINDER SECTION -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Repeat"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:padding="16dp">
 
-            <AutoCompleteTextView
-                android:id="@+id/etRepeat"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:focusable="true"
-                android:clickable="true"
-                android:cursorVisible="false"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical">
 
-        <!-- REMOVE REMINDER BUTTON -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRemoveReminder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Remove Reminder"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="@android:color/holo_red_dark"/>
+                <TextView
+                    android:id="@+id/tvSelectedDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No Reminder"
+                    android:textStyle="bold"/>
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Change Reminder"
+                    android:layout_marginTop="8dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Repeat"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/etRepeat"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRemoveReminder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Remove Reminder"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@android:color/holo_red_dark"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
 
         <!-- UPDATE BUTTON -->
@@ -96,33 +124,59 @@
             android:layout_marginTop="20dp"
             android:textStyle="bold"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSummary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="✨ Generate Summary"
-            android:layout_marginTop="12dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRewrite"
+        <!-- AI TOOLS CARD -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="✍ Rewrite Professionally"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:padding="16dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTags"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🏷 Generate Tags"
-            android:layout_marginTop="8dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSuggestTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🧠 Suggest Better Title"
-            android:layout_marginTop="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI Tools"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✨ Generate Summary"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRewrite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✍ Rewrite Professionally"
+                    android:layout_marginTop="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🏷 Generate Tags"
+                    android:layout_marginTop="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSuggestTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🧠 Suggest Better Title"
+                    android:layout_marginTop="8dp"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 

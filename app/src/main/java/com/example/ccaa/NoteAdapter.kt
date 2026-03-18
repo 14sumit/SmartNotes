@@ -11,8 +11,9 @@ import java.util.*
 
 class NoteAdapter(
     private val noteList: MutableList<Note>,
-    private val onItemClick: (Note) -> Unit,
-    private val onLongClick: (Note) -> Unit
+    private val onEditClick: (Note) -> Unit,
+    private val onPinClick: (Note) -> Unit,
+    private val onDeleteClick: (Note) -> Unit
 ) : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
     inner class NoteViewHolder(itemView: View) :
@@ -20,12 +21,21 @@ class NoteAdapter(
 
         private val title: TextView = itemView.findViewById(R.id.noteTitle)
         private val content: TextView = itemView.findViewById(R.id.noteContent)
+
         private val reminderLayout: LinearLayout =
             itemView.findViewById(R.id.reminderLayout)
+
         private val reminderText: TextView =
             itemView.findViewById(R.id.reminderText)
+
         private val pinIcon: TextView =
             itemView.findViewById(R.id.pinIcon)
+
+        private val btnEdit: TextView =
+            itemView.findViewById(R.id.btnEdit)
+
+        private val btnDelete: TextView =
+            itemView.findViewById(R.id.btnDelete)
 
         fun bind(note: Note) {
 
@@ -33,37 +43,50 @@ class NoteAdapter(
             content.text = note.content
 
             // 🔔 Reminder UI
-            if (note.reminderTime != null) {
+            val reminderTime = note.reminderTime
+
+            if (reminderTime != null) {
 
                 val sdf = SimpleDateFormat(
                     "dd MMM yyyy  HH:mm",
                     Locale.getDefault()
                 )
 
-                reminderText.text =
-                    sdf.format(Date(note.reminderTime))
+                reminderText.text = sdf.format(Date(reminderTime))
 
                 reminderLayout.visibility = View.VISIBLE
 
             } else {
+
                 reminderLayout.visibility = View.GONE
             }
 
             // 📌 Pin UI
-            if (note.isPinned) {
-                pinIcon.visibility = View.VISIBLE
-            } else {
-                pinIcon.visibility = View.GONE
+            pinIcon.visibility = if (note.isPinned) View.VISIBLE else View.GONE
+
+            // ✏ Edit
+            btnEdit.setOnClickListener {
+                onEditClick(note)
             }
 
-            // 👆 Click
+            // 🗑 Delete
+            btnDelete.setOnClickListener {
+                onDeleteClick(note)
+            }
+
+            // 📌 Pin toggle
+            pinIcon.setOnClickListener {
+                onPinClick(note)
+            }
+
+            // 👆 Open note
             itemView.setOnClickListener {
-                onItemClick(note)
+                onEditClick(note)
             }
 
-            // 👇 Long Click (Pin/Unpin)
+            // 👇 Long press pin
             itemView.setOnLongClickListener {
-                onLongClick(note)
+                onPinClick(note)
                 true
             }
         }

@@ -8,16 +8,20 @@ import android.provider.Settings
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.ccaa.ai.ChatRequest
-import com.example.ccaa.ai.ChatResponse
-import com.example.ccaa.ai.Message
-import com.example.ccaa.ai.OpenRouterClient
+import androidx.lifecycle.lifecycleScope
+import com.example.ccaa.ai.GeminiHelper
+
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestore
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.util.*
 
 class EditNoteActivity : AppCompatActivity() {
@@ -44,12 +48,12 @@ class EditNoteActivity : AppCompatActivity() {
         val btnTags = findViewById<MaterialButton>(R.id.btnTags)
         val btnSuggestTitle = findViewById<MaterialButton>(R.id.btnSuggestTitle)
 
-        // Get intent data
+        // Get note data
         noteId = intent.getStringExtra("noteId") ?: ""
         etTitle.setText(intent.getStringExtra("noteTitle") ?: "")
         etContent.setText(intent.getStringExtra("noteContent") ?: "")
 
-        // ---------------- REMINDER PICKER ----------------
+        // -------- DATE PICKER --------
 
         btnPickDate.setOnClickListener {
 
@@ -97,7 +101,7 @@ class EditNoteActivity : AppCompatActivity() {
             cancelReminder(noteId)
         }
 
-        // ---------------- UPDATE NOTE ----------------
+        // -------- UPDATE NOTE --------
 
         btnUpdate.setOnClickListener {
 
@@ -126,83 +130,93 @@ class EditNoteActivity : AppCompatActivity() {
                 }
         }
 
-        // ---------------- AI BUTTONS ----------------
+        // -------- AI BUTTONS --------
 
         btnSummary.setOnClickListener {
-            val prompt = "Summarize this note:\n${etContent.text}"
-            callAI(prompt) { etContent.setText(it) }
+            callAI("Summarize this note in 3 lines:\n${etContent.text}") {
+                etContent.setText(it)
+            }
         }
 
         btnRewrite.setOnClickListener {
-            val prompt = "Rewrite professionally:\n${etContent.text}"
-            callAI(prompt) { etContent.setText(it) }
+            callAI("Rewrite this note professionally:\n${etContent.text}") {
+                etContent.setText(it)
+            }
         }
 
         btnTags.setOnClickListener {
-            val prompt = "Generate 5 short tags:\n${etContent.text}"
-            callAI(prompt) {
+            callAI("Generate 5 short tags for this note:\n${etContent.text}") {
                 Toast.makeText(this, it, Toast.LENGTH_LONG).show()
             }
         }
 
         btnSuggestTitle.setOnClickListener {
-            val prompt = "Suggest a better short title:\n${etContent.text}"
-            callAI(prompt) { etTitle.setText(it) }
+            callAI("Suggest a better short title for this note:\n${etContent.text}") {
+                etTitle.setText(it)
+            }
         }
     }
 
-    // ---------------- AI CALL ----------------
+    // -------- GEMINI AI --------
 
     private fun callAI(prompt: String, onResult: (String) -> Unit) {
+        lifecycleScope.launch {
+            try {
+                // 1. USE YOUR ACTUAL KEY
+                val apiKey = "AIzaSyCBmfWZAY3PosEEX8JWkNjvllyVfaGOO6U"
 
-        val request = ChatRequest(
-            messages = listOf(
-                Message("user", prompt)
-            )
-        )
+                // 2. Build JSON safely using JSONObject
+                val contentJson = JSONObject().apply {
+                    put("contents", org.json.JSONArray().put(
+                        JSONObject().put("parts", org.json.JSONArray().put(
+                            JSONObject().put("text", prompt)
+                        ))
+                    ))
+                }
+                val requestBody = contentJson.toString().toRequestBody("application/json".toMediaType())
 
-        OpenRouterClient.service.chatCompletion(
-            OpenRouterClient.API_KEY,
-            "https://smartnotes.app",
-            "SmartNotes AI",
-            request
-        ).enqueue(object : Callback<ChatResponse> {
+                // 3. UPDATED URL: Changed to /v1/ and gemini-2.5-flash
+                val request = Request.Builder()
+                    .url("https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=$apiKey")
+                    .post(requestBody)
+                    .build()
 
-            override fun onResponse(
-                call: Call<ChatResponse>,
-                response: Response<ChatResponse>
-            ) {
-                if (response.isSuccessful && response.body() != null) {
+                val client = OkHttpClient()
+                val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
+                val responseBody = response.body?.string()
 
-                    val result = response.body()!!
-                        .choices[0]
-                        .message
-                        .content
+                // Logging remains vital for debugging
+                android.util.Log.d("GEMINI_RAW", responseBody ?: "null")
 
-                    runOnUiThread {
-                        onResult(result)
+                if (response.isSuccessful && responseBody != null) {
+                    val jsonObject = JSONObject(responseBody)
+
+                    // 4. Added safe navigation for the JSON response
+                    val candidates = jsonObject.optJSONArray("candidates")
+                    if (candidates != null && candidates.length() > 0) {
+                        val text = candidates.getJSONObject(0)
+                            .getJSONObject("content")
+                            .getJSONArray("parts")
+                            .getJSONObject(0)
+                            .getString("text")
+
+                        withContext(Dispatchers.Main) { onResult(text) }
+                    } else {
+                        withContext(Dispatchers.Main) { onResult("No candidates returned.") }
                     }
-
                 } else {
-                    Toast.makeText(
-                        this@EditNoteActivity,
-                        "AI Error: ${response.code()}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // If it fails, log the specific code (404, 403, etc.)
+                    withContext(Dispatchers.Main) { onResult("Error: ${response.code}") }
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@EditNoteActivity, "AI Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
-
-            override fun onFailure(call: Call<ChatResponse>, t: Throwable) {
-                Toast.makeText(
-                    this@EditNoteActivity,
-                    "AI Failed",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        })
+        }
     }
-
-    // ---------------- REMINDER ----------------
+    // -------- REMINDER --------
 
     private fun scheduleReminder(time: Long, title: String, noteId: String) {
 

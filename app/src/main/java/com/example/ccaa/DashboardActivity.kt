@@ -29,6 +29,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var firestore: FirebaseFirestore
 
     private lateinit var noteAdapter: NoteAdapter
+
     private val noteList = ArrayList<Note>()
     private val fullNoteList = ArrayList<Note>()
 
@@ -51,16 +52,9 @@ class DashboardActivity : AppCompatActivity() {
 
         noteAdapter = NoteAdapter(
             noteList,
-            { note ->
-                val intent = Intent(this, EditNoteActivity::class.java)
-                intent.putExtra("noteId", note.id)
-                intent.putExtra("noteTitle", note.title)
-                intent.putExtra("noteContent", note.content)
-                startActivity(intent)
-            },
-            { note ->
-                togglePin(note)
-            }
+            { note -> openEditNote(note) },
+            { note -> togglePin(note) },
+            { note -> deleteNote(note) }
         )
 
         recyclerView.adapter = noteAdapter
@@ -69,6 +63,11 @@ class DashboardActivity : AppCompatActivity() {
 
         fab.setOnClickListener {
             startActivity(Intent(this, AddNoteActivity::class.java))
+        }
+        val fabAI = findViewById<FloatingActionButton>(R.id.fabAI)
+
+        fabAI.setOnClickListener {
+            startActivity(Intent(this, AIChatActivity::class.java))
         }
     }
 
@@ -83,7 +82,19 @@ class DashboardActivity : AppCompatActivity() {
         noteListener = null
     }
 
-    // 🔥 Firestore realtime listener
+    // ✏ Open Edit Screen
+    private fun openEditNote(note: Note) {
+
+        val intent = Intent(this, EditNoteActivity::class.java)
+
+        intent.putExtra("noteId", note.id)
+        intent.putExtra("noteTitle", note.title)
+        intent.putExtra("noteContent", note.content)
+
+        startActivity(intent)
+    }
+
+    // 🔥 Firestore Realtime Notes
     private fun attachNoteListener() {
 
         val userId = auth.currentUser?.uid ?: return
@@ -103,8 +114,11 @@ class DashboardActivity : AppCompatActivity() {
                 noteList.clear()
 
                 value?.documents?.forEach { document ->
+
                     val note = document.toObject(Note::class.java)
+
                     if (note != null) {
+                        note.id = document.id
                         fullNoteList.add(note)
                         noteList.add(note)
                     }
@@ -114,100 +128,133 @@ class DashboardActivity : AppCompatActivity() {
             }
     }
 
-    // 🔥 Pin / Unpin
+    // 📌 Pin / Unpin Note
     private fun togglePin(note: Note) {
+
+        val newStatus = !note.isPinned
 
         firestore.collection("notes")
             .document(note.id)
-            .get()
-            .addOnSuccessListener { document ->
+            .update("isPinned", newStatus)
+            .addOnSuccessListener {
 
-                val currentStatus = document.getBoolean("isPinned") ?: false
-                val newStatus = !currentStatus
+                Toast.makeText(
+                    this,
+                    if (newStatus) "📌 Pinned" else "Unpinned",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-                firestore.collection("notes")
-                    .document(note.id)
-                    .update("isPinned", newStatus)
-                    .addOnSuccessListener {
+            }.addOnFailureListener {
 
-                        Toast.makeText(
-                            this,
-                            if (newStatus)
-                                "📌 Pinned successfully"
-                            else
-                                "Unpinned successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(
-                            this,
-                            "Failed to update pin",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                Toast.makeText(
+                    this,
+                    "Failed to update pin",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
-    // 🔥 Swipe to delete with undo
-    private fun setupSwipeToDelete() {
+    // 🗑 Delete Button with Undo
+    private fun deleteNote(note: Note) {
 
-        val swipeCallback = object :
-            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+        val position = noteList.indexOf(note)
 
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ) = false
+        if (position == -1) return
 
-            override fun onSwiped(
-                viewHolder: RecyclerView.ViewHolder,
-                direction: Int
+        noteList.removeAt(position)
+        noteAdapter.notifyItemRemoved(position)
+
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            "Note deleted",
+            Snackbar.LENGTH_LONG
+        ).setAction("UNDO") {
+
+            noteList.add(position, note)
+            noteAdapter.notifyItemInserted(position)
+
+        }.addCallback(object : Snackbar.Callback() {
+
+            override fun onDismissed(
+                transientBottomBar: Snackbar,
+                event: Int
             ) {
 
-                val position = viewHolder.bindingAdapterPosition
-                if (position == RecyclerView.NO_POSITION) return
+                if (event != DISMISS_EVENT_ACTION) {
 
-                val deletedNote = noteList[position]
-
-                noteList.removeAt(position)
-                noteAdapter.notifyItemRemoved(position)
-
-                Snackbar.make(
-                    findViewById(android.R.id.content),
-                    "Note deleted",
-                    Snackbar.LENGTH_LONG
-                ).setAction("UNDO") {
-
-                    noteList.add(position, deletedNote)
-                    noteAdapter.notifyItemInserted(position)
-
-                }.addCallback(object : Snackbar.Callback() {
-
-                    override fun onDismissed(
-                        transientBottomBar: Snackbar,
-                        event: Int
-                    ) {
-                        if (event != DISMISS_EVENT_ACTION) {
-
-                            firestore.collection("notes")
-                                .document(deletedNote.id)
-                                .delete()
-                                .addOnSuccessListener {
-                                    cancelReminder(deletedNote.id)
-                                }
+                    firestore.collection("notes")
+                        .document(note.id)
+                        .delete()
+                        .addOnSuccessListener {
+                            cancelReminder(note.id)
                         }
-                    }
-
-                }).show()
+                }
             }
-        }
+
+        }).show()
+    }
+
+    // 👉 Swipe Delete
+    private fun setupSwipeToDelete() {
+
+        val swipeCallback =
+            object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ) = false
+
+                override fun onSwiped(
+                    viewHolder: RecyclerView.ViewHolder,
+                    direction: Int
+                ) {
+
+                    val position = viewHolder.bindingAdapterPosition
+
+                    if (position == RecyclerView.NO_POSITION) return
+
+                    val deletedNote = noteList[position]
+
+                    noteList.removeAt(position)
+                    noteAdapter.notifyItemRemoved(position)
+
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
+                        "Note deleted",
+                        Snackbar.LENGTH_LONG
+                    ).setAction("UNDO") {
+
+                        noteList.add(position, deletedNote)
+                        noteAdapter.notifyItemInserted(position)
+
+                    }.addCallback(object : Snackbar.Callback() {
+
+                        override fun onDismissed(
+                            transientBottomBar: Snackbar,
+                            event: Int
+                        ) {
+
+                            if (event != DISMISS_EVENT_ACTION) {
+
+                                firestore.collection("notes")
+                                    .document(deletedNote.id)
+                                    .delete()
+                                    .addOnSuccessListener {
+                                        cancelReminder(deletedNote.id)
+                                    }
+                            }
+                        }
+
+                    }).show()
+                }
+            }
 
         ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView)
     }
 
-    // 🔥 Cancel scheduled alarm when deleted
+    // ⏰ Cancel Reminder
     private fun cancelReminder(noteId: String) {
 
         val intent = Intent(this, ReminderReceiver::class.java)
@@ -220,11 +267,13 @@ class DashboardActivity : AppCompatActivity() {
         )
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+
         alarmManager.cancel(pendingIntent)
     }
 
-    // 🔎 Search
+    // 🔎 Search Menu
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+
         menuInflater.inflate(R.menu.dashboard_menu, menu)
 
         val searchItem = menu?.findItem(R.id.action_search)
@@ -238,6 +287,7 @@ class DashboardActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String?) = false
 
             override fun onQueryTextChange(newText: String?): Boolean {
+
                 filterNotes(newText)
                 return true
             }
@@ -246,28 +296,36 @@ class DashboardActivity : AppCompatActivity() {
         return true
     }
 
+    // 🔎 Filter Notes
     private fun filterNotes(query: String?) {
 
-        val filteredList = if (query.isNullOrEmpty()) {
-            fullNoteList
-        } else {
-            fullNoteList.filter {
-                it.title.contains(query, true) ||
-                        it.content.contains(query, true)
+        val filteredList =
+            if (query.isNullOrEmpty()) {
+                fullNoteList
+            } else {
+                fullNoteList.filter {
+                    it.title.contains(query, true) ||
+                            it.content.contains(query, true)
+                }
             }
-        }
 
         noteList.clear()
         noteList.addAll(filteredList)
+
         noteAdapter.notifyDataSetChanged()
     }
 
+    // 🚪 Logout
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
         if (item.itemId == R.id.logout) {
+
             auth.signOut()
+
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
+
         return super.onOptionsItemSelected(item)
     }
 }

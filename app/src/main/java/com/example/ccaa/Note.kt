@@ -1,11 +1,20 @@
 package com.example.ccaa
+
 data class Note(
-    val id: String = "",
-    val userId: String = "",
-    val title: String = "",
-    val content: String = "",
-    val timestamp: Long = 0,
-    val reminderTime: Long? = null,
-    val isPinned: Boolean = false,
-    val repeatType: String = "NONE"
+
+    var id: String = "",
+
+    var userId: String = "",
+
+    var title: String = "",
+
+    var content: String = "",
+
+    var timestamp: Long = 0,
+
+    var reminderTime: Long? = null,
+
+    var isPinned: Boolean = false,
+
+    var repeatType: String = "NONE"
 )

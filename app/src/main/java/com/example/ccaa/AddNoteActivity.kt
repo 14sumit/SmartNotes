@@ -130,15 +130,21 @@ class AddNoteActivity : AppCompatActivity() {
 
             val noteId = firestore.collection("notes").document().id
 
+            // Prevent past reminder
+            if (selectedReminderTime != null && selectedReminderTime!! < System.currentTimeMillis()) {
+                Toast.makeText(this, "Reminder time must be in the future", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val note = hashMapOf(
-                "id" to noteId,
                 "userId" to user.uid,
                 "title" to title,
                 "content" to content,
                 "timestamp" to System.currentTimeMillis(),
                 "reminderTime" to selectedReminderTime,
                 "isPinned" to false,
-                "repeatType" to selectedRepeat
+                "repeatType" to selectedRepeat,
+                "id" to noteId
             )
 
             firestore.collection("notes")
@@ -147,13 +153,15 @@ class AddNoteActivity : AppCompatActivity() {
                 .addOnSuccessListener {
 
                     selectedReminderTime?.let {
-                        scheduleReminder(it, title, noteId)
+                        scheduleReminder(it, title, content, noteId)
                     }
 
                     Toast.makeText(this, "Note Saved Successfully", Toast.LENGTH_SHORT).show()
+
                     finish()
                 }
                 .addOnFailureListener {
+
                     Toast.makeText(this, "Failed to Save Note", Toast.LENGTH_SHORT).show()
                 }
         }
@@ -179,7 +187,7 @@ class AddNoteActivity : AppCompatActivity() {
 
     // ---------------- SAFE REMINDER ----------------
 
-    private fun scheduleReminder(time: Long, title: String, noteId: String) {
+    private fun scheduleReminder(time: Long, title: String, content: String, noteId: String) {
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
@@ -194,6 +202,7 @@ class AddNoteActivity : AppCompatActivity() {
 
             val intent = Intent(this, ReminderReceiver::class.java)
             intent.putExtra("noteTitle", title)
+            intent.putExtra("noteContent", content)
             intent.putExtra("noteId", noteId)
 
             val pendingIntent = PendingIntent.getBroadcast(
